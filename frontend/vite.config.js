@@ -9,5 +9,9 @@ export default defineConfig({
       '/api': { target: 'http://localhost:8000', changeOrigin: true },
       '/health': { target: 'http://localhost:8000', changeOrigin: true },
     }
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false
   }
 })
