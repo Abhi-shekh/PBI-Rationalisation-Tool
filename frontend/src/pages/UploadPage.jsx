@@ -4,7 +4,7 @@ import { Btn, Spinner, Tag, showToast } from '../components/UI'
 export function UploadPage({ reports, config, setConfig, addFiles, loadSample, removeReport, clearAll, onRun, loading, progress }) {
   const [isDragActive, setIsDragActive] = useState(false)
   const folderInputRef = useRef(null)
-  const fileInputRef = useRef(null)
+  const fileInputRef   = useRef(null)
 
   const walkEntry = useCallback((entry, path = '') => {
     return new Promise(async (resolve) => {
@@ -27,36 +27,28 @@ export function UploadPage({ reports, config, setConfig, addFiles, loadSample, r
           })
         }
         readBatch()
-      } else {
-        resolve([])
-      }
+      } else { resolve([]) }
     })
   }, [])
 
   const handleDrop = useCallback(async (e) => {
-    e.preventDefault()
-    setIsDragActive(false)
+    e.preventDefault(); setIsDragActive(false)
     const items = Array.from(e.dataTransfer.items || [])
     const allFiles = []
     for (const item of items) {
       const entry = item.webkitGetAsEntry?.()
-      if (entry) {
-        const files = await walkEntry(entry)
-        allFiles.push(...files)
-      } else if (item.kind === 'file') {
-        allFiles.push(item.getAsFile())
-      }
+      if (entry) { const files = await walkEntry(entry); allFiles.push(...files) }
+      else if (item.kind === 'file') allFiles.push(item.getAsFile())
     }
     if (!allFiles.length) return
     await addFiles(allFiles)
-    // toast shown after parse
+    showToast(`Scanned ${allFiles.length} files`)
   }, [addFiles, walkEntry])
 
   const handleFolderInput = useCallback(async (e) => {
     const files = Array.from(e.target.files || [])
     if (!files.length) return
     await addFiles(files)
-    // toast shown after parse
     e.target.value = ''
   }, [addFiles])
 
@@ -64,7 +56,6 @@ export function UploadPage({ reports, config, setConfig, addFiles, loadSample, r
     const files = Array.from(e.target.files || [])
     if (!files.length) return
     await addFiles(files)
-    showToast(`${files.length} file(s) loaded`)
     e.target.value = ''
   }, [addFiles])
 
@@ -90,8 +81,7 @@ export function UploadPage({ reports, config, setConfig, addFiles, loadSample, r
           border: `1.5px dashed ${isDragActive ? 'var(--accent)' : 'var(--line-md)'}`,
           borderRadius: 'var(--r-lg)',
           background: isDragActive ? 'var(--accent-bg)' : 'var(--surface)',
-          padding: '44px 24px', textAlign: 'center',
-          transition: 'all 0.2s', marginBottom: 12,
+          padding: '44px 24px', textAlign: 'center', transition: 'all 0.2s', marginBottom: 12,
         }}
       >
         <div style={{ fontSize: 32, marginBottom: 12 }}>📁</div>
@@ -99,31 +89,20 @@ export function UploadPage({ reports, config, setConfig, addFiles, loadSample, r
           {isDragActive ? 'Release to scan…' : 'Drop your PBIP root folder here'}
         </div>
         <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>
-          Auto-discovers all <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>.Report</code> subfolders
-          and reads <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>report.json</code> metadata
+          Auto-discovers all <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>.Report</code> folders
+          and reads <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>page.json</code> metadata
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => folderInputRef.current?.click()} style={primaryBtn}>
-            📂 Browse Folder
-          </button>
-          <input ref={folderInputRef} type="file" webkitdirectory="" directory="" multiple
-            style={{ display: 'none' }} onChange={handleFolderInput} />
-          <button onClick={() => fileInputRef.current?.click()} style={ghostBtn}>
-            📄 Pick individual files
-          </button>
-          <input ref={fileInputRef} type="file" multiple
-            style={{ display: 'none' }} onChange={handleFileInput} />
+          <button onClick={() => folderInputRef.current?.click()} style={primaryBtn}>📂 Browse Folder</button>
+          <input ref={folderInputRef} type="file" webkitdirectory="" directory="" multiple style={{ display: 'none' }} onChange={handleFolderInput} />
+          <button onClick={() => fileInputRef.current?.click()} style={ghostBtn}>📄 Pick individual files</button>
+          <input ref={fileInputRef} type="file" multiple style={{ display: 'none' }} onChange={handleFileInput} />
         </div>
       </div>
 
-      <div style={{
-        background: 'var(--surface2)', border: '1px solid var(--line)',
-        borderRadius: 'var(--r-sm)', padding: '10px 14px', marginBottom: 12,
-        fontSize: 12, color: 'var(--muted)', display: 'flex', gap: 16, flexWrap: 'wrap',
-      }}>
-        <span>🔍 Finds: <code style={{ fontFamily: 'var(--font-mono)' }}>*.Report/definition/report.json</code></span>
+      <div style={{ background: 'var(--surface2)', border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '10px 14px', marginBottom: 12, fontSize: 12, color: 'var(--muted)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        <span>🔍 Finds: <code style={{ fontFamily: 'var(--font-mono)' }}>*.Report/definition/page.json</code></span>
         <span>📊 Reads: <code style={{ fontFamily: 'var(--font-mono)' }}>*.SemanticModel/model.bim</code></span>
-        <span>📄 Or drop any <code style={{ fontFamily: 'var(--font-mono)' }}>report.json</code> directly</span>
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
@@ -138,68 +117,53 @@ export function UploadPage({ reports, config, setConfig, addFiles, loadSample, r
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {reports.map((r) => (
-              <div key={r.file} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                background: 'var(--surface)', border: '1px solid var(--line)',
-                borderRadius: 'var(--r-sm)', padding: '8px 12px', fontSize: 13,
-              }}>
+              <div key={r.file} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r-sm)', padding: '8px 12px', fontSize: 13 }}>
                 <span style={{ fontSize: 15 }}>📊</span>
                 <span style={{ flex: 1, fontWeight: 500 }}>{r.name}</span>
                 {r.parse_ok ? <Tag>meta ✓</Tag> : <span style={{ fontSize: 10, color: 'var(--muted2)' }}>name only</span>}
                 {r.pages != null && <Tag>{r.pages} pages</Tag>}
-                {r.size_kb > 0 && (
-                  <span style={{ fontSize: 11, color: 'var(--muted2)', fontFamily: 'var(--font-mono)', minWidth: 52, textAlign: 'right' }}>
-                    {r.size_kb} KB
-                  </span>
-                )}
-                <button onClick={() => removeReport(r.file)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted2)', fontSize: 14, padding: '0 4px' }}>
-                  ✕
-                </button>
+                {r.meta?.filters?.length > 0 && <Tag>{r.meta.filters.length} filters</Tag>}
+                {r.size_kb > 0 && <span style={{ fontSize: 11, color: 'var(--muted2)', fontFamily: 'var(--font-mono)', minWidth: 52, textAlign: 'right' }}>{r.size_kb} KB</span>}
+                <button onClick={() => removeReport(r.file)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted2)', fontSize: 14, padding: '0 4px' }}>✕</button>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <div style={{
-        background: 'var(--surface)', border: '1px solid var(--line)',
-        borderRadius: 'var(--r-lg)', padding: 22, marginBottom: 20,
-      }}>
-        <div style={{ fontWeight: 700, fontFamily: 'var(--font-display)', fontSize: 14, marginBottom: 18, letterSpacing: '-0.2px' }}>
-          Analysis configuration
-        </div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r-lg)', padding: 22, marginBottom: 20 }}>
+        <div style={{ fontWeight: 700, fontFamily: 'var(--font-display)', fontSize: 14, marginBottom: 18, letterSpacing: '-0.2px' }}>Analysis configuration</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <ConfigBlock title="Step 1 — Name similarity" accent="var(--accent)">
-            <SliderField label="Threshold" value={config.name_threshold} min={30} max={100}
-              onChange={v => setConfig(c => ({ ...c, name_threshold: v }))} suffix="%" />
-            <SelectField label="Algorithm" value={config.algo}
-              onChange={v => setConfig(c => ({ ...c, algo: v }))}
+            <SliderField label="Threshold" value={config.name_threshold} min={10} max={100} onChange={v => setConfig(c => ({ ...c, name_threshold: v }))} suffix="%" />
+            <SelectField label="Algorithm" value={config.algo} onChange={v => setConfig(c => ({ ...c, algo: v }))}
               options={[
-                { value: 'token', label: 'Token cosine (recommended)' },
-                { value: 'edit',  label: 'Edit distance' },
-                { value: 'jaro',  label: 'Jaro-Winkler' },
+                { value: 'token',    label: 'Token cosine (recommended)' },
+                { value: 'edit',     label: 'Edit distance' },
+                { value: 'jaro',     label: 'Jaro-Winkler' },
                 { value: 'combined', label: 'Combined (avg)' },
               ]} />
-            <CheckRow label="Ignore year numbers (2024, 2025…)" checked={config.ignore_years}
-              onChange={v => setConfig(c => ({ ...c, ignore_years: v }))} />
-            <CheckRow label="Ignore version markers (v2, final…)" checked={config.ignore_versions}
-              onChange={v => setConfig(c => ({ ...c, ignore_versions: v }))} />
-            <CheckRow label="Ignore region suffixes (EMEA, NA…)" checked={config.ignore_regions}
-              onChange={v => setConfig(c => ({ ...c, ignore_regions: v }))} />
+            <CheckRow label="Ignore year numbers (2024, 2025…)" checked={config.ignore_years} onChange={v => setConfig(c => ({ ...c, ignore_years: v }))} />
+            <CheckRow label="Ignore version markers (v2, final…)" checked={config.ignore_versions} onChange={v => setConfig(c => ({ ...c, ignore_versions: v }))} />
+            <CheckRow label="Ignore region suffixes (EMEA, NA…)" checked={config.ignore_regions} onChange={v => setConfig(c => ({ ...c, ignore_regions: v }))} />
           </ConfigBlock>
 
           <ConfigBlock title="Step 2 — Metadata similarity" accent="var(--accent2)">
-            <SliderField label="Threshold" value={config.meta_threshold} min={20} max={100}
-              onChange={v => setConfig(c => ({ ...c, meta_threshold: v }))} suffix="%" />
-            <CheckRow label="Compare tables / sources (40%)" checked={config.check_tables}
-              onChange={v => setConfig(c => ({ ...c, check_tables: v }))} />
-            <CheckRow label="Compare visuals per page (25%)" checked={config.check_visuals}
-              onChange={v => setConfig(c => ({ ...c, check_visuals: v }))} />
-            <CheckRow label="Compare filters applied (20%)" checked={config.check_filters}
-              onChange={v => setConfig(c => ({ ...c, check_filters: v }))} />
-            <CheckRow label="Compare page count (15%)" checked={config.check_pages}
-              onChange={v => setConfig(c => ({ ...c, check_pages: v }))} />
+            <SliderField label="Threshold" value={config.meta_threshold} min={20} max={100} onChange={v => setConfig(c => ({ ...c, meta_threshold: v }))} suffix="%" />
+            <div style={{ fontSize: 11, color: 'var(--muted2)', marginBottom: 2 }}>Weights set in Settings</div>
+            <CheckRow label={`Tables / sources (${Math.round((config.weight_tables||0.30)*100)}%)`} checked={config.check_tables} onChange={v => setConfig(c => ({ ...c, check_tables: v }))} />
+            <CheckRow label={`Visuals per page (${Math.round((config.weight_visuals||0.20)*100)}%)`} checked={config.check_visuals} onChange={v => setConfig(c => ({ ...c, check_visuals: v }))} />
+            <CheckRow label={`Filters with values (${Math.round((config.weight_filters||0.25)*100)}%)`} checked={config.check_filters} onChange={v => setConfig(c => ({ ...c, check_filters: v }))} />
+            <CheckRow label={`Fields used (${Math.round((config.weight_fields||0.10)*100)}%)`} checked={config.check_fields !== false} onChange={v => setConfig(c => ({ ...c, check_fields: v }))} />
+            <CheckRow label={`Page count (${Math.round((config.weight_pages||0.15)*100)}%)`} checked={config.check_pages} onChange={v => setConfig(c => ({ ...c, check_pages: v }))} />
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'settings' }))}
+              style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 'var(--r-sm)', padding: '8px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              ⚙ Adjust weights in Settings →
+            </button>
           </ConfigBlock>
         </div>
       </div>
@@ -229,18 +193,8 @@ export function UploadPage({ reports, config, setConfig, addFiles, loadSample, r
   )
 }
 
-const primaryBtn = {
-  display: 'inline-flex', alignItems: 'center', gap: 7,
-  background: 'var(--ink)', color: 'var(--surface)',
-  border: 'none', borderRadius: 'var(--r-sm)', padding: '9px 20px',
-  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)',
-}
-const ghostBtn = {
-  display: 'inline-flex', alignItems: 'center', gap: 7,
-  background: 'transparent', color: 'var(--muted)',
-  border: '1px solid var(--line-md)', borderRadius: 'var(--r-sm)', padding: '9px 20px',
-  fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)',
-}
+const primaryBtn = { display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--ink)', color: 'var(--surface)', border: 'none', borderRadius: 'var(--r-sm)', padding: '9px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }
+const ghostBtn   = { display: 'inline-flex', alignItems: 'center', gap: 7, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line-md)', borderRadius: 'var(--r-sm)', padding: '9px 20px', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }
 
 function ConfigBlock({ title, accent, children }) {
   return (
@@ -257,9 +211,7 @@ function SliderField({ label, value, min, max, onChange, suffix = '' }) {
         <span>{label}</span>
         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--ink)' }}>{value}{suffix}</span>
       </div>
-      <input type="range" min={min} max={max} value={value}
-        style={{ width: '100%', accentColor: 'var(--accent)' }}
-        onChange={e => onChange(+e.target.value)} />
+      <input type="range" min={min} max={max} value={value} style={{ width: '100%', accentColor: 'var(--accent)' }} onChange={e => onChange(+e.target.value)} />
     </div>
   )
 }
@@ -267,11 +219,7 @@ function SelectField({ label, value, onChange, options }) {
   return (
     <div>
       <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 4 }}>{label}</div>
-      <select value={value} onChange={e => onChange(e.target.value)} style={{
-        width: '100%', background: 'var(--surface)', border: '1px solid var(--line-md)',
-        borderRadius: 'var(--r-sm)', padding: '5px 8px', fontSize: 12,
-        color: 'var(--ink)', fontFamily: 'var(--font-body)',
-      }}>
+      <select value={value} onChange={e => onChange(e.target.value)} style={{ width: '100%', background: 'var(--surface)', border: '1px solid var(--line-md)', borderRadius: 'var(--r-sm)', padding: '5px 8px', fontSize: 12, color: 'var(--ink)', fontFamily: 'var(--font-body)' }}>
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </div>
@@ -280,8 +228,7 @@ function SelectField({ label, value, onChange, options }) {
 function CheckRow({ label, checked, onChange }) {
   return (
     <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontSize: 12, color: 'var(--muted)' }}>
-      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)}
-        style={{ accentColor: 'var(--accent)', cursor: 'pointer' }} />
+      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} style={{ accentColor: 'var(--accent)', cursor: 'pointer' }} />
       {label}
     </label>
   )
@@ -290,11 +237,7 @@ function ProgressPips({ total, current }) {
   return (
     <div style={{ display: 'flex', gap: 4 }}>
       {Array.from({ length: total }, (_, i) => (
-        <div key={i} style={{
-          width: 8, height: 8, borderRadius: '50%',
-          background: i < current ? 'var(--accent)' : 'var(--line-md)',
-          transition: 'background 0.3s',
-        }} />
+        <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: i < current ? 'var(--accent)' : 'var(--line-md)', transition: 'background 0.3s' }} />
       ))}
     </div>
   )

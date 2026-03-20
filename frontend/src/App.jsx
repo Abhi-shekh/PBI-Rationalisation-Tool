@@ -15,6 +15,13 @@ const TABS = [
 export default function App() {
   const [tab, setTab] = useState('upload')
 
+  // Listen for navigate events from child components
+  React.useEffect(() => {
+    const handler = (e) => setTab(e.detail)
+    window.addEventListener('navigate', handler)
+    return () => window.removeEventListener('navigate', handler)
+  }, [])
+
   const {
     reports, config, setConfig,
     result, loading, progress, error,
@@ -140,7 +147,7 @@ export default function App() {
         fontSize: 11, color: 'var(--muted2)',
       }}>
         <span style={{ fontFamily: 'var(--font-mono)' }}>PBI Rationalisation v1.0</span>
-        <span>Accelarator/Innovator</span>
+        <span>FastAPI + React · Two-pass clustering</span>
       </footer>
     </div>
   )
