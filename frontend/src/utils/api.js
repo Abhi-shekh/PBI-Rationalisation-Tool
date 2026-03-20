@@ -1,10 +1,14 @@
 import axios from 'axios'
 
-const api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL || '') + '/api',
-})
+const BASE_URL = import.meta.env.VITE_API_URL
 
-export default api
+if (!BASE_URL) {
+  throw new Error("VITE_API_URL is not defined")
+}
+
+const api = axios.create({
+  baseURL: BASE_URL + '/api',
+})
 
 export const uploadFiles = (files) => {
   const fd = new FormData()
