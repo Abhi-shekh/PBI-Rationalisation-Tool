@@ -65,8 +65,8 @@ export function ResultsPage({ result, canonicals, setCanonical, onExportCSV, onE
       {/* ── Stats ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 24 }}>
         <StatCard label="Total reports" value={stats.total_reports} />
-        <StatCard label="Groups found" value={stats.unique_groups} />
-        <StatCard label="Total similar reports" value={stats.rationalisation_candidates} sub={`${stats.saving_pct}% of reports`} accent="var(--coral)" />
+        <StatCard label="Distinct Reports (Can't be grouped)" value={stats.unique_groups} />
+        <StatCard label="Similar reports (Can be grouped)" value={stats.rationalisation_candidates} sub={`${stats.saving_pct}% of reports`} accent="var(--coral)" />
         <StatCard label="Rational reports" value={stats.groups_with_duplicates} accent="var(--warn)" />
       </div>
 
