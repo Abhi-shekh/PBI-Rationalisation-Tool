@@ -15,6 +15,7 @@ app = FastAPI(title="PBI Rationalisation API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
+    allow_credentials=True,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
